@@ -1,0 +1,29 @@
+# Spring properties
+spring:
+  application:
+    name: api-gateway # Identify this application
+    main:
+      allow-bean-definition-overriding: true
+
+# HTTP Server
+server:
+  port: 2222   # HTTP (Tomcat) port
+
+# Discovery Server Access
+#  1. DEV ONLY: Reduce the lease renewal interval to speed up registration
+#  2. Define URL of registration server (defaultZone)
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+      
+zuul:
+  ignored-services: "*"
+  routes:
+    dummy-service:
+      path: /** # The part that has to be appended if a specific call is made
+      service-id: dummy-service
+    auth-service:
+      path: /auth/**
+      service-id: AUTH-SERVICE # can we write this lowercase?
+      
