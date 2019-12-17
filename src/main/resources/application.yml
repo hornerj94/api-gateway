@@ -26,4 +26,4 @@ zuul:
     auth-service:
       path: /auth/**
       service-id: AUTH-SERVICE # can we write this lowercase?
-      
+      sensitive-headers: Cookie,Set-Cookie      
