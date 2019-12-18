@@ -50,9 +50,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // allow all who are accessing "auth" service
             .antMatchers(HttpMethod.POST, jwtConfig.getUri()).permitAll()
             // must be an admin if trying to access secured page (authentication is also required)
-            .antMatchers("/securedPage/**").hasRole("ADMIN")
-            // Any other request must be authenticated
-            .anyRequest().authenticated();
+            .antMatchers("/securedPage/**").hasRole("ADMIN");
     }
 
     //----------------------------------------------------------------------------------------------

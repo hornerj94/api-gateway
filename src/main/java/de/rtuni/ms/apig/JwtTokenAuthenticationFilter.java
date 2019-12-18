@@ -23,7 +23,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 /**
- * Class for
+ * Filter class for authentication of the provided JSON web token.
  * 
  * @author Julian
  */
@@ -36,7 +36,7 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Set the given configuration for json web token.
+     * Set the given configuration for the token.
      * 
      * @param config The stated configuration
      */
@@ -51,28 +51,26 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain chain) throws ServletException, IOException {
         
-        // 1. get the authentication header. Tokens are supposed to be passed in the 
-        // authentication header
+        // 1. get the authentication header. 
+        // Tokens are supposed to be passed in the authentication header.
         String header = request.getHeader(jwtConfig.getHeader());
         // 2. validate the header and check the prefix
         if (header == null || !header.startsWith(jwtConfig.getPrefix())) {
             chain.doFilter(request, response); // If not valid, go to the next filter.
+            
             return;
         }
-        
+
         /*
-         * If there is no token provided and hence the user won't be authenticated.
-         * It's Ok. Maybe the user accessing a public path or asking for a token.
-         * All secured paths that needs a token are already defined and secured in config class.
-         * And if user tried to access without access token, then he won't be authenticated and
-         * an exception will be thrown.
+         * If no token is provided, the user is not authenticated. That is okay. Maybe the user
+         * accessing a public path or asking for a token. All secured paths that needs a token are
+         * already defined and secured in SecurityConfiguration class. If the user tried to access
+         * without access token, then he won't be authenticated and an exception will be thrown.
          */
         
         // 3. Get the token
         String token = header.replace(jwtConfig.getPrefix(), "");
-        try { 
-            // exceptions might be thrown in creating the claims if for example the token is expired
-            
+        try { // Exceptions can be triggered when creating claims, e.g if the token has expired
             // 4. Validate the token
             Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecret().getBytes())
                     .parseClaimsJws(token).getBody();
@@ -95,7 +93,6 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                                 map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
                 
                 // 6. Authenticate the user
-                // Now, user is authenticated
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         } catch (Exception e) {
