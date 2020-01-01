@@ -5,11 +5,8 @@
 
 package de.rtuni.ms.apig;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -17,7 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Class that handles security configuration.
+ * Class that enables custom security configuration.
  * 
  * @author Julian
  */
@@ -25,32 +22,41 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     //----------------------------------------------------------------------------------------------
 
-    /** The configuration for the json web token. */
+    /** The <code>JwtConfig</code> for the json web token. */
     @Autowired
     private JwtConfig jwtConfig;
 
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Overrides the default configuration.
+     * Overrides the default security configuration.
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
             // make sure we use stateless session; session won't be used to store user's state.
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-            // handle an authorized attempts 
-            .exceptionHandling().authenticationEntryPoint(
-                    (req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)).and()
-            // Add a filter to validate the tokens with every request
+            
+            // Add a filter to validate the tokens with every request.
             .addFilterAfter(new JwtTokenAuthenticationFilter(jwtConfig),
                     UsernamePasswordAuthenticationFilter.class)
-            // authorization requests config
+            
             .authorizeRequests()
-            // allow all who are accessing "auth" service
-            .antMatchers(HttpMethod.POST, jwtConfig.getUri()).permitAll()
-            // must be an admin if trying to access secured page (authentication is also required)
-            .antMatchers("/securedPage/**").hasRole("ADMIN");
+            .antMatchers("/auth/**").permitAll()
+            // Anyone who is trying to access the securedPage must be an ADMIN.
+            // TODO can we change the path to /securedPage?
+            .antMatchers("/securedPage/**").hasRole("ADMIN")
+            // Permit default path. 
+            .antMatchers("/login").permitAll().and()
+            // Configures where to forward if authentication is required.
+            .formLogin().loginPage("/login")
+            // Configures url for processing of login data.
+            .loginProcessingUrl("process_login") // TODO can we remove this?
+            // Configures where to go if there is no previous visited page.
+            .defaultSuccessUrl("/", true).and()
+            // Configures url for processing of logout.
+            .logout().logoutUrl("/process_logout")
+            .deleteCookies("JSESSIONID"); // TODO i think we can remove this
     }
 
     //----------------------------------------------------------------------------------------------
