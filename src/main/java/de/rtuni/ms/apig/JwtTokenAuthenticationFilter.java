@@ -30,13 +30,13 @@ import io.jsonwebtoken.Jwts;
 public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     //----------------------------------------------------------------------------------------------
 
-    /** The configuration for the json web token. */
+    /** The <code>JwtConfig</code> for the json web token. */
     private final JwtConfig jwtConfig;
 
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Set the given configuration for the token.
+     * Set the given <code>JwtConfig</code> for the token.
      * 
      * @param config The stated configuration
      */
@@ -45,61 +45,62 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     //----------------------------------------------------------------------------------------------
 
     /**
+     * If a token is supplied by the user the token will be decrypt and the user will be set as
+     * currently authenticated user. That includes the authorities which were granted to the
+     * user by the authentication service. If there is no supplied token the next filter will be
+     * executed.
+     * <p>
      * {@inheritDoc}
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain chain) throws ServletException, IOException {
         
-        // 1. get the authentication header. 
-        // Tokens are supposed to be passed in the authentication header.
-        String header = request.getHeader(jwtConfig.getHeader());
-        // 2. validate the header and check the prefix
-        if (header == null || !header.startsWith(jwtConfig.getPrefix())) {
+        // Gets the authentication header.
+        String bearerToken = request.getParameter("access_token");
+        // Validate the header and check the prefix.
+        if (bearerToken == null || !bearerToken.startsWith(jwtConfig.getPrefix())) {
+            // If no token is provided the user is not authenticated
+            // and we continue with the next filter. 
+            // Thats okay because maybe the user is accessing a public path.
             chain.doFilter(request, response); // If not valid, go to the next filter.
             
             return;
         }
 
-        /*
-         * If no token is provided, the user is not authenticated. That is okay. Maybe the user
-         * accessing a public path or asking for a token. All secured paths that needs a token are
-         * already defined and secured in SecurityConfiguration class. If the user tried to access
-         * without access token, then he won't be authenticated and an exception will be thrown.
-         */
-        
-        // 3. Get the token
-        String token = header.replace(jwtConfig.getPrefix(), "");
-        try { // Exceptions can be triggered when creating claims, e.g if the token has expired
-            // 4. Validate the token
+        // Removes the bearer substring from the authentication header.
+        String token = bearerToken.replace(jwtConfig.getPrefix(), "");
+
+        // Note that exceptions can be triggered when creating claims, e.g if the token has expired.
+        try { 
+            // Sets secret and decrypt the token.
             Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecret().getBytes())
                     .parseClaimsJws(token).getBody();
+            
             String username = claims.getSubject();
             if (username != null) {
+                // Gets the authorities which were added to the token by the auth-service.
                 @SuppressWarnings("unchecked")
                 List<String> authorities = (List<String>) claims.get("authorities");
+               
+                // Create an UsernamePasswordAuthenticationToken which represents the 
+                // authenticated user or the user who is being authenticated currently.
+                //
+                // Because we need a list of authorities, which are from the type GrantedAuthority
+                // we have to convert the Strings to SimpleGrantedAuthority which is an 
+                // implementation.
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        username, null, authorities.stream()
+                                .map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
                 
-                // 5. Create auth object
-                
-                /*
-                 * UsernamePasswordAuthenticationToken: A built-in object, used by spring to
-                 * represent the current authenticated / being authenticated user.
-                 * It needs a list of authorities, which has type of GrantedAuthority interface,
-                 * where SimpleGrantedAuthority is an implementation of that interface
-                 */
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                username, null, authorities.stream().
-                                map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-                
-                // 6. Authenticate the user
+                // Set the user as new authenticated user.
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         } catch (Exception e) {
-            // In case of failure. Make sure it's clear; so guarantee user won't be authenticated
+            // In case of failure. Make sure user won't be authenticated.
             SecurityContextHolder.clearContext();
         }
-        // go to the next filter in the filter chain
+        
         chain.doFilter(request, response);
     }
     
