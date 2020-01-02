@@ -1,29 +1,25 @@
-# Spring properties
 spring:
   application:
-    name: api-gateway # Identify this application
+    name: api-gateway # Identifier of this application
 
-# HTTP Server
 server:
-  port: 2222   # HTTP (Tomcat) port
+  port: 2222
 
-# Discovery Server Access
-#  1. DEV ONLY: Reduce the lease renewal interval to speed up registration
-#  2. Define URL of registration server (defaultZone)
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/ 
+      # URL of the eureka server necessary for client registration
       
 zuul:
-  ignoredPatterns: /login/**
+  ignoredPatterns: /login/** # The login path is served by the api-gateway directly
   ignored-services: "*"
-  routes:
+  routes: # Forwardings of requests
     dummy-service:
-      path: /** # The part that has to be appended if a specific call is made
+      path: /**
       service-id: dummy-service
     auth-service:
       path: /auth/**
       service-id: auth-service
-      strip-prefix: false
-      sensitive-headers: Cookie,Set-Cookie      
+      strip-prefix: false # Forward the request all together with the auth path
+      sensitive-headers: Cookie, Set-Cookie # Avoid to send cookies to external entities
