@@ -3,7 +3,7 @@
  * All Rights Reserved.
  */
 
-package de.rtuni.ms.apig;
+package de.rtuni.ms.apig.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
