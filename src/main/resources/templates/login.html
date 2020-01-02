@@ -4,24 +4,20 @@
     <title>Login</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   </head>
+  
   <body>
     <h1>Login</h1>
     <form name="loginForm" action="securedPage/" method="POST">
-      <input id="access_token" type="hidden" name="access_token" value="">
+      <input type="hidden" id="access_token" name="access_token" value="">
       
       <fieldset>
-        <legend>Please Login</legend>
-        
-        <div th:if="${param.error}" class="alert alert-error">Invalid username and password.</div>
-        <div th:if="${param.logout}" class="alert alert-success">You have been logged out.</div>
-        
+        <legend>Please Login</legend>  
         <label for="username">Username</label>
-        <input type="text" id="username" name="username"/>        
+        <input type="text" id="username" name="username"/> 
         <label for="password">Password</label>
         <input type="password" id="password" name="password"/>    
-        
         <div>
-          <button type="button" class="btn" onclick="requestToken()">Log in</button>
+          <button type="button" onclick="requestToken()">Log in</button>
         </div>
       </fieldset>
     </form>
@@ -59,18 +55,8 @@
                       tokenElem.value = token;
                                             
                       document.loginForm.submit();
-                      
-                      //let tokenCookie = "authToken=" + token;
-                      //tokenCookie += ";path=/";
-                      
-                      //const date = new Date();
-                      //date.setTime(date.getTime() + (1000 * 60 * 60 * 24));
-                      //tokenCookie += ";expires=" + date.toGMTString();
-                      //document.cookie = tokenCookie;
-                      
-                      //forward();
                   } else if (httpRequest.status === 401) {
-                      alert("Either username or password was wrong.");
+                      alert("You are not authorized to see the page.");
                   } else {
                       alert("Something went wrong try again.");
                   }
@@ -78,44 +64,6 @@
           } catch (e) { alert("Caught Exception: " + e.description); }
       }
   
-      //-------------------------------------------------------------------------------------------
-
-      function forward() {
-    	  const cookies = document.cookie;   
-    	  const cookieArray = cookies.split("; ")
-    	 
-    	  let authToken;
-    	  cookieArray.forEach((elem) => {
-    	      if (elem.startsWith("authToken")) {
-    	    	  authToken = elem.slice("authToken=".length);
-			  }
-    	  });
-    	      	  
-          const httpRequest = new XMLHttpRequest();
-          httpRequest.onreadystatechange = (httpRequest) => {
-              try {
-                  if (httpRequest.readyState === XMLHttpRequest.DONE) {
-                	  console.log(httpRequest.status);
-                      if (httpRequest.status === 200) {
-                          console.log(httpRequest.responseText);
-                          var newWindow = window.open(httpRequest);
-
-                      } else {
-                          alert("Something went wrong try again.");
-                      }
-                  }
-              } catch (e) { alert("Caught Exception: " + e.description); }
-
-        	  
-          }
-          httpRequest.open("GET", "/securedPage", false);
-          httpRequest.setRequestHeader("Authorization", "Bearer " + authToken);
-          httpRequest.setRequestHeader("Cache-Control", "no-cache");
-          httpRequest.setRequestHeader("Content-Type", "text/html;");
-                               
-          httpRequest.send();
-      }
-      
       //-------------------------------------------------------------------------------------------
   </script>
 </html>
