@@ -8,8 +8,7 @@ server:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/ 
-      # URL of the eureka server necessary for client registration
+      defaultZone: http://localhost:8761/eureka/ # URL of the eureka server for registration
       
 zuul:
   ignoredPatterns: /login/** # The login path is served by the api-gateway directly
@@ -22,4 +21,4 @@ zuul:
       path: /auth/**
       service-id: auth-service
       strip-prefix: false # Forward the request all together with the auth path
-      sensitive-headers: Cookie, Set-Cookie # Avoid to send cookies to external entities
+      sensitive-headers: Cookie, Set-Cookie # Avoid to send internal cookies to external entities
