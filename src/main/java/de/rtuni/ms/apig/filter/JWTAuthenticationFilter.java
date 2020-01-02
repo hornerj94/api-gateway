@@ -19,36 +19,36 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import de.rtuni.ms.apig.config.JwtConfig;
+import de.rtuni.ms.apig.config.JwtConfiguration;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 /**
- * Filter class for authentication of the provided JSON web token.
+ * Filter class for authentication of the JWT.
  * 
  * @author Julian
  */
-public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
-    //----------------------------------------------------------------------------------------------
+public class JWTAuthenticationFilter extends OncePerRequestFilter {
+    //---------------------------------------------------------------------------------------------
 
-    /** The <code>JwtConfig</code> for the json web token. */
-    private final JwtConfig jwtConfig;
+    /** The <code>JwtConfiguration</code>. */
+    private JwtConfiguration jwtConfig;
 
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 
     /**
-     * Set the given <code>JwtConfig</code> for the token.
+     * Constructor that sets the given <code>JwtConfiguration</code>.
      * 
      * @param config The stated configuration
      */
-    public JwtTokenAuthenticationFilter(final JwtConfig config) { jwtConfig = config; }
+    public JWTAuthenticationFilter(final JwtConfiguration config) { jwtConfig = config; }
 
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 
     /**
-     * If a token is supplied by the user the token will be decrypt and the user will be set as
+     * If a token is supplied by the user the token will be decrypted and the user will be set as
      * currently authenticated user. That includes the authorities which were granted to the
-     * user by the authentication service. If there is no supplied token the next filter will be
+     * user by the auth service. If there is no supplied token the next filter will be
      * executed.
      * <p>
      * {@inheritDoc}
@@ -56,25 +56,21 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain chain) throws ServletException, IOException {
-        
-        // Gets the authentication header.
+        // Gets the access_token parameter.
         String bearerToken = request.getParameter("access_token");
         // Validate the header and check the prefix.
         if (bearerToken == null || !bearerToken.startsWith(jwtConfig.getPrefix())) {
-            // If no token is provided the user is not authenticated
-            // and we continue with the next filter. 
-            // Thats okay because maybe the user is accessing a public path.
+            // If there's no token the user isn't authenticated and we execute the next filter. 
             chain.doFilter(request, response); // If not valid, go to the next filter.
             
             return;
         }
-
         // Removes the bearer substring from the authentication header.
         String token = bearerToken.replace(jwtConfig.getPrefix(), "");
 
-        // Note that exceptions can be triggered when creating claims, e.g if the token has expired.
+        // Exceptions can be triggered when creating claims, e.g if the token has expired.
         try { 
-            // Sets secret and decrypt the token.
+            // Sets secret and decrypts the token.
             Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecret().getBytes())
                     .parseClaimsJws(token).getBody();
             
@@ -94,16 +90,16 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                         username, null, authorities.stream()
                                 .map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
                 
-                // Set the user as new authenticated user.
+                // Sets user as the currently authenticated.
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         } catch (Exception e) {
-            // In case of failure. Make sure user won't be authenticated.
+            // In case of failure make sure user won't be authenticated.
             SecurityContextHolder.clearContext();
         }
         
         chain.doFilter(request, response);
     }
     
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 }
