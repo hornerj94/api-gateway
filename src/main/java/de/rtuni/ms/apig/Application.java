@@ -11,7 +11,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 
 /**
- * Starts the api gateway as a zuul server.
+ * Class for starting an api gateway as a zuul server.
  * 
  * @author Julian
  *
@@ -23,11 +23,11 @@ public class Application {
     //---------------------------------------------------------------------------------------------
     
     /**
-     * Starts the application.
+     * Start the application.
      * 
      * @param args The arguments
      */
-    public static void main(final String[] args) { SpringApplication.run(Application.class, args); }
+    public static void main(String[] args) { SpringApplication.run(Application.class, args); }
 
     //---------------------------------------------------------------------------------------------
 }

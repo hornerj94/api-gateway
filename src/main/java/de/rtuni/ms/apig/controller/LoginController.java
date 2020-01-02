@@ -9,23 +9,24 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Class that handles all kind of requests.
+ * Login controller that handles all requests for the login path.
  * 
  * @author Julian
  */
 @Controller
 public class LoginController {
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 
     /**
-     * Catch the request for the login page and returns the name of the corresponding template.
+     * Catch the request for the default login page and return the name of the corresponding
+     * template.
      * 
-     * @return The name of the template
+     * @return The name of the template to show
      */
     @RequestMapping("/login")
     public String login() {
         return "login";
     }
 
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 }

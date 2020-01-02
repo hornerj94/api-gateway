@@ -13,65 +13,59 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import de.rtuni.ms.apig.filter.JwtTokenAuthenticationFilter;
+import de.rtuni.ms.apig.filter.JWTAuthenticationFilter;
 
 /**
- * Class that enables custom security configuration.
+ * Class that handles several security configurations.
  * 
  * @author Julian
  */
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 
-    /** The <code>JwtConfig</code> for the json web token. */
+    /** The <code>JwtConfiguration</code>. */
     @Autowired
-    private JwtConfig jwtConfig;
+    private JwtConfiguration jwtConfiguration;
 
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 
     /**
-     * Overrides the default security configuration.
+     * Get a new <code>JwtConfiguration</code>.
+     * 
+     * @return The stated JWT configuration
+     */
+    @Bean
+    public JwtConfiguration jwtConfig() {
+        return new JwtConfiguration();
+    }
+
+    //---------------------------------------------------------------------------------------------
+
+    /**
+     * Configure custom security configurations.
+     * <p>
+     * {@inheritDoc}
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-            // make sure we use stateless session; session won't be used to store user's state.
+            // Use stateless sessions.
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             
-            // Add a filter to validate the tokens with every request.
-            .addFilterAfter(new JwtTokenAuthenticationFilter(jwtConfig),
+            // Add filter to validate tokens with every request.
+            .addFilterAfter(new JWTAuthenticationFilter(jwtConfiguration),
                     UsernamePasswordAuthenticationFilter.class)
             
             .authorizeRequests()
-            .antMatchers("/auth/**").permitAll()
-            // Anyone who is trying to access the securedPage must be an ADMIN.
-            // TODO can we change the path to /securedPage?
+            // Permit only users with ADMIN role.
             .antMatchers("/securedPage/**").hasRole("ADMIN")
-            // Permit default path. 
+            // Permit auth and login path for sending credentials. 
+            .antMatchers("/auth/**").permitAll()
             .antMatchers("/login").permitAll().and()
             // Configures where to forward if authentication is required.
-            .formLogin().loginPage("/login")
-            // Configures url for processing of login data.
-            .loginProcessingUrl("process_login") // TODO can we remove this?
-            // Configures where to go if there is no previous visited page.
-            .defaultSuccessUrl("/", true).and()
-            // Configures url for processing of logout.
-            .logout().logoutUrl("/process_logout")
-            .deleteCookies("JSESSIONID"); // TODO i think we can remove this
+            .formLogin().loginPage("/login");
     }
 
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * Get a new <code>JwtConfig</code>.
-     * 
-     * @return The stated configuration
-     */
-    @Bean
-    public JwtConfig jwtConfig() {
-        return new JwtConfig();
-    }
-
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 }
