@@ -19,12 +19,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import de.rtuni.ms.apig.config.JwtConfiguration;
+import de.rtuni.ms.apig.config.JWTConfiguration;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 /**
- * Filter class for authentication of the JWT.
+ * Filter class for authentication of the user via the JWT.
  * 
  * @author Julian
  */
@@ -32,7 +32,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     //---------------------------------------------------------------------------------------------
 
     /** The <code>JwtConfiguration</code>. */
-    private JwtConfiguration jwtConfig;
+    private JWTConfiguration jwtConfiguration;
 
     //---------------------------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
      * 
      * @param config The stated configuration
      */
-    public JWTAuthenticationFilter(final JwtConfiguration config) { jwtConfig = config; }
+    public JWTAuthenticationFilter(final JWTConfiguration config) { jwtConfiguration = config; }
 
     //---------------------------------------------------------------------------------------------
 
@@ -50,8 +50,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
      * currently authenticated user. That includes the authorities which were granted to the
      * user by the auth service. If there is no supplied token the next filter will be
      * executed.
-     * <p>
-     * {@inheritDoc}
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -59,19 +57,19 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         // Gets the access_token parameter.
         String bearerToken = request.getParameter("access_token");
         // Validate the header and check the prefix.
-        if (bearerToken == null || !bearerToken.startsWith(jwtConfig.getPrefix())) {
+        if (bearerToken == null || !bearerToken.startsWith(jwtConfiguration.getPrefix())) {
             // If there's no token the user isn't authenticated and we execute the next filter. 
             chain.doFilter(request, response); // If not valid, go to the next filter.
             
             return;
         }
         // Removes the bearer substring from the authentication header.
-        String token = bearerToken.replace(jwtConfig.getPrefix(), "");
+        String token = bearerToken.replace(jwtConfiguration.getPrefix(), "");
 
         // Exceptions can be triggered when creating claims, e.g if the token has expired.
         try { 
             // Sets secret and decrypts the token.
-            Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecret().getBytes())
+            Claims claims = Jwts.parser().setSigningKey(jwtConfiguration.getSecret().getBytes())
                     .parseClaimsJws(token).getBody();
             
             String username = claims.getSubject();

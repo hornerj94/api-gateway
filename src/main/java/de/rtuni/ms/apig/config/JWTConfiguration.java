@@ -13,12 +13,16 @@ import org.springframework.beans.factory.annotation.Value;
  * @author Julian
  *
  */
-public class JwtConfiguration {
-    //----------------------------------------------------------------------------------------------
+public class JWTConfiguration {
+    //---------------------------------------------------------------------------------------------
 
     /** Get the URI where the credentials needs to be send. */
     @Value("${security.jwt.uri:/auth/**}")
     private String Uri;
+
+    /** Get the header authorization type. */
+    @Value("${security.jwt.header:Authorization}")
+    private String header;
 
     /** Get the prefix of the token message. */
     @Value("${security.jwt.prefix:Bearer}")
@@ -32,7 +36,7 @@ public class JwtConfiguration {
     @Value("${security.jwt.secret:JwtSecretKey}")
     private String secret;
 
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 
     /**
      * Get the URI where the credentials needs to be send.
@@ -42,25 +46,32 @@ public class JwtConfiguration {
     public String getUri() { return Uri; }
 
     /**
+     * Get the header authorization type.
+     * 
+     * @return The stated header
+     */
+    public String getHeader() { return header; }
+
+    /**
      * Get the prefix of the token message.
      * 
-     * @return The prefix
+     * @return The stated prefix
      */
     public String getPrefix() { return prefix; }
 
     /**
      * Get the expiration of the token in seconds.
      * 
-     * @return The expiration
+     * @return The stated expiration
      */
     public int getExpiration() { return expiration; }
 
     /**
      * Get the the key for encryption and decryption.
      * 
-     * @return The secret
+     * @return The stated secret
      */
     public String getSecret() { return secret; }
 
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
 }

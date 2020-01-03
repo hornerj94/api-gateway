@@ -56,7 +56,7 @@
                                             
                       document.loginForm.submit();
                   } else if (httpRequest.status === 401) {
-                      alert("You are not authorized to see the page.");
+                      alert("Authorization failed, either user or password was incorrect.");
                   } else {
                       alert("Something went wrong try again.");
                   }

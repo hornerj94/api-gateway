@@ -26,7 +26,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     /** The <code>JwtConfiguration</code>. */
     @Autowired
-    private JwtConfiguration jwtConfiguration;
+    private JWTConfiguration jwtConfiguration;
 
     //---------------------------------------------------------------------------------------------
 
@@ -36,35 +36,31 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * @return The stated JWT configuration
      */
     @Bean
-    public JwtConfiguration jwtConfig() {
-        return new JwtConfiguration();
-    }
+    public JWTConfiguration jwtConfig() { return new JWTConfiguration(); }
 
     //---------------------------------------------------------------------------------------------
 
     /**
      * Configure custom security configurations.
-     * <p>
-     * {@inheritDoc}
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-            // Use stateless sessions.
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-            
-            // Add filter to validate tokens with every request.
-            .addFilterAfter(new JWTAuthenticationFilter(jwtConfiguration),
-                    UsernamePasswordAuthenticationFilter.class)
-            
-            .authorizeRequests()
-            // Permit only users with ADMIN role.
-            .antMatchers("/securedPage/**").hasRole("ADMIN")
-            // Permit auth and login path for sending credentials. 
-            .antMatchers("/auth/**").permitAll()
-            .antMatchers("/login").permitAll().and()
-            // Configures where to forward if authentication is required.
-            .formLogin().loginPage("/login");
+        // Use stateless sessions.
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+        
+        // Add filter to validate tokens with every request.
+        .addFilterAfter(new JWTAuthenticationFilter(jwtConfiguration),
+                UsernamePasswordAuthenticationFilter.class)
+ 
+        .authorizeRequests()
+        // Permit only users with ADMIN role.
+        .antMatchers("/securedPage/**").hasRole("ADMIN")
+        // Permit auth and login path for sending credentials. 
+        .antMatchers("/auth/**").permitAll()
+        .antMatchers("/login").permitAll().and()
+        // Configures where to forward if authentication is required.
+        .formLogin().loginPage("/login");
     }
 
     //---------------------------------------------------------------------------------------------
