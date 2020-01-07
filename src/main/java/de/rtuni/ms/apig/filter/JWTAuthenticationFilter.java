@@ -56,7 +56,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             FilterChain chain) throws ServletException, IOException {
         // Gets the access_token parameter.
         String bearerToken = request.getParameter("access_token");
-        // Validate the header and check the prefix.
+        // Validate the token and check the prefix.
         if (bearerToken == null || !bearerToken.startsWith(jwtConfiguration.getPrefix())) {
             // If there's no token the user isn't authenticated and we execute the next filter. 
             chain.doFilter(request, response); // If not valid, go to the next filter.

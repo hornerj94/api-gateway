@@ -57,8 +57,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Permit only users with ADMIN role.
         .antMatchers("/securedPage/**").hasRole("ADMIN")
         // Permit auth and login path for sending credentials. 
-        .antMatchers("/auth/**").permitAll()
-        .antMatchers("/login").permitAll().and()
+        .antMatchers("/auth/**", "/login").permitAll().and()
         // Configures where to forward if authentication is required.
         .formLogin().loginPage("/login");
     }
