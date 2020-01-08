@@ -7,7 +7,7 @@
   
   <body>
     <h1>Login</h1>
-    <form name="loginForm" action="securedPage/" method="POST">
+    <form name="loginForm" action="/" method="POST">
       <input type="hidden" id="access_token" name="access_token" value="">
       
       <fieldset>
@@ -36,7 +36,7 @@
           httpRequest.setRequestHeader("Cache-Control", "no-cache");
           httpRequest.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
                       
-          let params = {};
+          const params = {};
           params.username = usernameElem.value; 
           params.password = passwordElem.value;
           
@@ -53,7 +53,16 @@
                       
                       const tokenElem = document.getElementById("access_token");
                       tokenElem.value = token;
-                                            
+                                
+                      const cookies = document.cookie;
+                      let forwardPageCookie = "";
+                      cookies.split("; ").forEach((elem) => {
+                    	  if (elem.split("=")[0] === "forwardPage") {
+                    		  forwardPageCookie = elem.split("=")[1];
+						  }
+                      });
+                      
+                      document.loginForm.action = getCookie("forwardPage");                      
                       document.loginForm.submit();
                   } else if (httpRequest.status === 401) {
                       alert("Authorization failed, either user or password was incorrect.");
@@ -64,6 +73,20 @@
           } catch (e) { alert("Caught Exception: " + e.description); }
       }
   
+      //-------------------------------------------------------------------------------------------
+      
+      function getCookie(name) {
+          const cookies = document.cookie;
+          let forwardPageCookie = "";
+          cookies.split("; ").forEach((elem) => {
+              if (elem.split("=")[0] === "name") {
+                  forwardPageCookie = elem.split("=")[1];
+              }
+          });
+
+          return forwardPageCookie;
+      }
+      
       //-------------------------------------------------------------------------------------------
   </script>
 </html>

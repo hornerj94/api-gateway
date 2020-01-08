@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import de.rtuni.ms.apig.filter.ForwardFilter;
 import de.rtuni.ms.apig.filter.JWTAuthenticationFilter;
 
 /**
@@ -49,6 +50,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Use stateless sessions.
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         
+        // Add filter to set passed cookie.
+        .addFilterBefore(new ForwardFilter(), UsernamePasswordAuthenticationFilter.class)
         // Add filter to validate tokens with every request.
         .addFilterAfter(new JWTAuthenticationFilter(jwtConfiguration),
                 UsernamePasswordAuthenticationFilter.class)
